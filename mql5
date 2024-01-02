@@ -1,0 +1,99 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                           Activator.mq5          |
+//|                                      Copyright 2022, Forex Robot Easy Team |
+//|                                              forexroboteasy.com     |
+//+------------------------------------------------------------------+
+
+// Indicators
+#property indicator_chart_window
+#property indicator_buffers 1
+#property indicator_color1 Yellow
+
+// Input parameters
+input int period = 14; // Indicator period
+
+// Global variables
+double trendStrengthBuffer[];
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Indicator buffers
+    SetIndexBuffer(0, trendStrengthBuffer, INDICATOR_DATA);
+
+    // Indicator label
+    IndicatorSetString(INDICATOR_SHORTNAME, 'Activator');
+
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+{
+    int limit = rates_total - prev_calculated;
+
+    if (prev_calculated > 0)
+        limit++;
+
+    // Calculate trend strength
+    for (int i = 0; i < limit; i++)
+    {
+        double sum = 0;
+
+        for (int j = i - period + 1; j <= i; j++)
+        {
+            sum += MathAbs(close[j] - close[j - 1]);
+        }
+
+        trendStrengthBuffer[i] = sum / period;
+    }
+
+    return(rates_total);
+}
+
+//+------------------------------------------------------------------+
+//| Custom trading function                                          |
+//+------------------------------------------------------------------+
+void Trade()
+{
+    // Check for temporary weaknesses in the trend
+    for (int i = 1; i < Bars; i++)
+    {
+        if (trendStrengthBuffer[i] < trendStrengthBuffer[i - 1])
+        {
+            // Temporary weakness detected, take action
+            // Place your trading logic here
+        }
+    }
+
+    // Enter the market based on indicator readings
+    // Place your entry logic here
+
+    // Stay in the market trend even amidst fluctuations
+    // Place your trend-following logic here
+}
+
+//+------------------------------------------------------------------+
+//| Custom EA start function                                         |
+//+------------------------------------------------------------------+
+int start()
+{
+    // Call the trade function
+    Trade();
+
+    return(0);
+}
